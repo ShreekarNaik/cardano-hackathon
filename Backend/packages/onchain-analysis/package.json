@@ -1,0 +1,40 @@
+{
+  "name": "@decentralai/onchain-analysis",
+  "version": "1.0.0",
+  "description": "On-chain data collection and analysis for Cardano",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "lint": "eslint src --ext .ts",
+    "collector": "tsx src/collector.ts",
+    "indexer": "tsx src/indexer.ts"
+  },
+  "keywords": [
+    "cardano",
+    "blockchain",
+    "ogmios",
+    "indexer",
+    "analytics"
+  ],
+  "dependencies": {
+    "@cardano-ogmios/client": "^6.0.0",
+    "pg": "^8.11.0",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.10.0",
+    "@types/pg": "^8.10.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}

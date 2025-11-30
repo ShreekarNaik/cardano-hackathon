@@ -1,0 +1,12 @@
+name = "decentralai/decentralai_analytics"
+version = "1.0.0"
+license = "MIT"
+description = "Cardano smart contracts for DecentralAI Analytics platform"
+
+[[dependencies]]
+name = "aiken-lang/stdlib"
+version = "main"
+source = "github"
+
+[config]
+network = { tag = "preprod" }

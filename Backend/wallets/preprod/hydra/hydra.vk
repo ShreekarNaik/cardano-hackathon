@@ -1,0 +1,5 @@
+{
+  "type": "HydraVerificationKey_ed25519",
+  "description": "Hydra Verification Key",
+  "cborHex": "5820e23d0e8e7b64f59ad655db280b86d7195fa11ee75814b77468cc6787ac0be6c3"
+}

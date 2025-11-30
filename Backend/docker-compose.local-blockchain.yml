@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # Yaci DevKit - Local Cardano Blockchain
+  yaci-devkit:
+    image: bloxbean/yaci-devkit:latest
+    container_name: cardano-local
+    ports:
+      - "8080:8080" # Yaci Store API & Explorer
+      - "3001:3001" # Cardano Node
+      - "9091:9090" # Kupo (indexer)
+    volumes:
+      - yaci-data:/data
+    environment:
+      - YACI_NETWORK=devnet
+      - YACI_SLOT_LENGTH=1
+      - YACI_EPOCH_LENGTH=500
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/epochs/latest"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Hydra Node (for L2 testing)
+  hydra-node:
+    image: ghcr.io/cardano-scaling/hydra-node:latest
+    container_name: hydra-local
+    ports:
+      - "4001:4001" # Hydra API
+      - "5001:5001" # Hydra P2P
+    environment:
+      - HYDRA_NODE_ID=hydra-node-1
+      - HYDRA_API_HOST=0.0.0.0
+      - HYDRA_API_PORT=4001
+      - HYDRA_HOST=0.0.0.0
+      - HYDRA_PORT=5001
+    volumes:
+      - hydra-data:/data
+    depends_on:
+      yaci-devkit:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4001/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  yaci-data:
+    driver: local
+  hydra-data:
+    driver: local

@@ -1,0 +1,38 @@
+# AI Agent Company - Python Dependencies
+
+# OpenAI for CEO Agent
+openai>=1.0.0
+
+# Docker SDK for Coder Agent
+docker>=7.0.0
+
+# Async support
+asyncio>=3.4.3
+aiohttp>=3.9.0
+
+# Data processing
+pandas>=2.1.0
+numpy>=1.24.0
+
+# Utilities
+python-dotenv>=1.0.0
+pydantic>=2.5.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.12.0
+pytest-cov>=4.1.0
+
+# Type checking
+mypy>=1.7.0
+types-requests>=2.31.0
+
+# Logging
+loguru>=0.7.2
+
+# HTTP requests
+requests>=2.31.0
+
+# JSON handling
+orjson>=3.9.0

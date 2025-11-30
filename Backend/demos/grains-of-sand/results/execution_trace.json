@@ -1,0 +1,212 @@
+[
+  {
+    "timestamp": "2025-11-30T06:54:23.931Z",
+    "category": "INFO",
+    "message": "Received Query: \"Estimate how many grains of sand are there on Earth?\""
+  },
+  {
+    "timestamp": "2025-11-30T06:54:24.932Z",
+    "category": "AGENT",
+    "message": "CEO Agent: Analyzing request complexity and resource requirements..."
+  },
+  {
+    "timestamp": "2025-11-30T06:54:24.934Z",
+    "category": "AGENT",
+    "message": "CEO Agent: Estimated Cost: 5 ADA"
+  },
+  {
+    "timestamp": "2025-11-30T06:54:24.934Z",
+    "category": "CHAIN",
+    "message": "Initiating payment via Masumi Network..."
+  },
+  {
+    "timestamp": "2025-11-30T06:54:26.435Z",
+    "category": "CHAIN",
+    "message": "Payment Confirmed",
+    "data": {
+      "txHash": "2c4c04c68f06a68b624860af1e21551acefabd837f71fea7a545a0d1de062d65",
+      "amount": 5,
+      "token": "ADA"
+    }
+  },
+  {
+    "timestamp": "2025-11-30T06:54:26.435Z",
+    "category": "HYDRA",
+    "message": "Initializing Hydra Head for high-frequency agent coordination..."
+  },
+  {
+    "timestamp": "2025-11-30T06:54:27.436Z",
+    "category": "HYDRA",
+    "message": "Head Status: Initializing",
+    "data": {
+      "parties": [
+        "CEO",
+        "Geologist",
+        "Physics",
+        "Math"
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-11-30T06:54:28.238Z",
+    "category": "HYDRA",
+    "message": "Committing funds to Head..."
+  },
+  {
+    "timestamp": "2025-11-30T06:54:28.238Z",
+    "category": "CHAIN",
+    "message": "Layer 1 Commit Transaction",
+    "data": {
+      "txHash": "tx_commit_1764485668238",
+      "utxo": "utxo_123"
+    }
+  },
+  {
+    "timestamp": "2025-11-30T06:54:29.040Z",
+    "category": "HYDRA",
+    "message": "Head Status: OPEN",
+    "data": {
+      "headId": "head-1764485669040"
+    }
+  },
+  {
+    "timestamp": "2025-11-30T06:54:29.040Z",
+    "category": "AGENT",
+    "message": "CEO Agent: Decomposing task into sub-problems..."
+  },
+  {
+    "timestamp": "2025-11-30T06:54:29.040Z",
+    "category": "HYDRA",
+    "message": "Transaction: Task Assignment -> Geologist Agent",
+    "data": {
+      "task": "Estimate total coastline length"
+    }
+  },
+  {
+    "timestamp": "2025-11-30T06:54:29.841Z",
+    "category": "AGENT",
+    "message": "Geologist Agent: Processing..."
+  },
+  {
+    "timestamp": "2025-11-30T06:54:31.043Z",
+    "category": "HYDRA",
+    "message": "Transaction: Result Submission <- Geologist Agent",
+    "data": {
+      "result": "356,000 km"
+    }
+  },
+  {
+    "timestamp": "2025-11-30T06:54:31.044Z",
+    "category": "AGENT",
+    "message": "Geologist Agent: Task Complete",
+    "data": {
+      "result": "356,000 km",
+      "confidence": 0.85
+    }
+  },
+  {
+    "timestamp": "2025-11-30T06:54:31.044Z",
+    "category": "HYDRA",
+    "message": "Transaction: Task Assignment -> Physics Agent",
+    "data": {
+      "task": "Calculate average beach volume"
+    }
+  },
+  {
+    "timestamp": "2025-11-30T06:54:31.846Z",
+    "category": "AGENT",
+    "message": "Physics Agent: Processing..."
+  },
+  {
+    "timestamp": "2025-11-30T06:54:33.047Z",
+    "category": "HYDRA",
+    "message": "Transaction: Result Submission <- Physics Agent",
+    "data": {
+      "result": "Volume = Length * 50m width * 10m depth"
+    }
+  },
+  {
+    "timestamp": "2025-11-30T06:54:33.047Z",
+    "category": "AGENT",
+    "message": "Physics Agent: Task Complete",
+    "data": {
+      "result": "Volume = Length * 50m width * 10m depth",
+      "confidence": 0.92
+    }
+  },
+  {
+    "timestamp": "2025-11-30T06:54:33.048Z",
+    "category": "HYDRA",
+    "message": "Transaction: Task Assignment -> Math Agent",
+    "data": {
+      "task": "Calculate grain density"
+    }
+  },
+  {
+    "timestamp": "2025-11-30T06:54:33.849Z",
+    "category": "AGENT",
+    "message": "Math Agent: Processing..."
+  },
+  {
+    "timestamp": "2025-11-30T06:54:35.051Z",
+    "category": "HYDRA",
+    "message": "Transaction: Result Submission <- Math Agent",
+    "data": {
+      "result": "8,000,000,000 grains per m³"
+    }
+  },
+  {
+    "timestamp": "2025-11-30T06:54:35.052Z",
+    "category": "AGENT",
+    "message": "Math Agent: Task Complete",
+    "data": {
+      "result": "8,000,000,000 grains per m³",
+      "confidence": 0.95
+    }
+  },
+  {
+    "timestamp": "2025-11-30T06:54:35.053Z",
+    "category": "HYDRA",
+    "message": "All tasks complete. Closing Hydra Head..."
+  },
+  {
+    "timestamp": "2025-11-30T06:54:36.054Z",
+    "category": "HYDRA",
+    "message": "Head Status: CLOSED"
+  },
+  {
+    "timestamp": "2025-11-30T06:54:36.054Z",
+    "category": "CHAIN",
+    "message": "Layer 1 Fanout Transaction (Settlement)",
+    "data": {
+      "txHash": "tx_fanout_1764485676054"
+    }
+  },
+  {
+    "timestamp": "2025-11-30T06:54:36.055Z",
+    "category": "AGENT",
+    "message": "CEO Agent: Aggregating results and formulating final answer..."
+  },
+  {
+    "timestamp": "2025-11-30T06:54:37.055Z",
+    "category": "AGENT",
+    "message": "Final Answer Formulated: 7.5 x 10^18 (7.5 quintillion) grains of sand"
+  },
+  {
+    "timestamp": "2025-11-30T06:54:37.056Z",
+    "category": "CHAIN",
+    "message": "Recording final proof on Cardano Layer 1..."
+  },
+  {
+    "timestamp": "2025-11-30T06:54:39.059Z",
+    "category": "CHAIN",
+    "message": "Result Verified on Chain",
+    "data": {
+      "txHash": "tx_proof_1764485679059",
+      "metadata": {
+        "query": "Estimate how many grains of sand are there on Earth?",
+        "answer": "7.5 x 10^18 (7.5 quintillion) grains of sand"
+      }
+    }
+  }
+]

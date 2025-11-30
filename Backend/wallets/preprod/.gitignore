@@ -1,0 +1,5 @@
+*.skey
+*.vkey
+*.addr
+*.mnemonic
+!.gitkeep

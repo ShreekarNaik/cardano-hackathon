@@ -1,0 +1,5 @@
+{
+  "name": "Agentic Orchestrator",
+  "description": "A high-fidelity agentic system previewer visualizing orchestrator nodes, sub-agents, and live context streams.",
+  "requestFramePermissions": []
+}

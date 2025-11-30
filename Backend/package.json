@@ -1,0 +1,81 @@
+{
+  "name": "decentralai-analytics",
+  "version": "4.0.0",
+  "description": "Decentralized AI-powered on-chain analytics platform on Cardano",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "install:all": "pnpm install && pnpm run install:python",
+    "install:python": "cd packages/agent-company && pip install -r requirements.txt && cd ../ds-star-analytics && pip install -r requirements.txt",
+    "dev": "concurrently 'pnpm run dev:backend' 'pnpm run dev:frontend'",
+    "dev:backend": "pnpm --filter backend-api dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "build": "pnpm -r --if-present build",
+    "build:contracts": "cd packages/cardano-contracts && aiken build",
+    "test": "pnpm -r --if-present test",
+    "test:unit": "pnpm -r --if-present test:unit",
+    "test:integration": "pnpm --filter tests test",
+    "test:load": "node scripts/load-test.js",
+    "lint": "pnpm -r --if-present lint",
+    "format": "prettier --write '**/*.{js,ts,tsx,json,md}'",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:ps": "docker-compose ps",
+    "docker:clean": "docker-compose down -v",
+    "contracts:build": "cd packages/cardano-contracts && aiken build && aiken check",
+    "contracts:deploy:testnet": "node scripts/deploy-contracts.js --network testnet",
+    "contracts:deploy:mainnet": "node scripts/deploy-contracts.js --network mainnet",
+    "agents:register:testnet": "node scripts/register-agents.js --network testnet",
+    "deploy:testnet": "bash scripts/deploy-testnet.sh",
+    "deploy:mainnet": "bash scripts/deploy-mainnet.sh",
+    "setup": "bash scripts/setup-all.sh",
+    "clean": "pnpm -r --if-present clean && rm -rf node_modules",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "check:balance": "npx ts-node scripts/check-balances.ts",
+    "build:cardano": "cd packages/cardano-integration && pnpm run build",
+    "demo:grains-of-sand": "npx ts-node demos/grains-of-sand/run-demo.ts",
+    "demo:verify-grains-of-sand": "npx ts-node demos/grains-of-sand/verify-demo.ts",
+    "monitor:transactions": "npx ts-node scripts/monitor-transactions.ts"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "concurrently": "^8.2.2",
+    "dotenv": "^17.2.3",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "^2.29.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.1.0",
+    "ts-jest": "^29.4.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/decentralai-analytics.git"
+  },
+  "keywords": [
+    "cardano",
+    "blockchain",
+    "ai",
+    "analytics",
+    "hydra",
+    "masumi",
+    "maker",
+    "ds-star",
+    "decentralized",
+    "web3"
+  ],
+  "author": "DecentralAI Analytics Team",
+  "license": "MIT"
+}

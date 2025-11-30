@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glass UI Dashboard</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            background-color: #000;
+            color: white;
+            font-family: 'Schibsted Grotesk', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* GLASSMORPHISM V2 - "Gradient Stroke & Inner Glow" */
+        .glass-panel {
+            /* Base Surface */
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.00) 100%);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            
+            /* INNER GLOW & SHADOWS */
+            box-shadow: 
+                0px 4px 12.5px 0px hsla(0, 0%, 100%, 0.08),
+                0px 4px 40px 0px hsla(0, 0%, 100%, 0.1),
+                inset -1px -2px 21.6px -4px hsla(0, 0%, 100%, 0.29);
+                
+            position: relative;
+            border: 0; 
+        }
+
+        /* THE GRADIENT STROKE */
+        .glass-panel::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px; 
+            
+            background: linear-gradient(135deg, 
+                hsla(0, 0%, 100%, 1) 0%, 
+                hsla(0, 0%, 59%, 0.59) 20%, 
+                hsla(0, 0%, 30%, 0.8) 45%, 
+                hsla(0, 0%, 57%, 0.57) 60%, 
+                hsla(0, 0%, 100%, 1) 85%, 
+                hsla(0, 0%, 0%, 0) 100%
+            );
+            
+            -webkit-mask: 
+                linear-gradient(#fff 0 0) content-box, 
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* DYNAMIC SUNLIGHT */
+        .glass-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px; 
+            
+            background: radial-gradient(
+                600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+                rgba(255, 255, 255, 0.4), 
+                transparent 40%
+            );
+            
+            -webkit-mask: 
+                linear-gradient(#fff 0 0) content-box, 
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            
+            pointer-events: none;
+            z-index: 3;
+            opacity: 0.6; 
+            mix-blend-mode: overlay;
+        }
+
+        /* Utility Styles */
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        /* New Container Styles for the Scrolling Text */
+        #scrolling-text-container {
+            mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 100%);
+        }
+
+        .scroll-line {
+            position: absolute;
+            left: 30px; 
+            white-space: nowrap;
+            line-height: 20px; 
+            height: 20px;
+            transition: bottom 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                        filter 0.8s ease, 
+                        opacity 0.8s ease;
+            will-change: transform, filter, opacity;
+        }
+
+        /* Console Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-8 bg-black selection:bg-white/20 selection:text-white">
+
+    <!-- Ambient Background Effects -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div class="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-purple-900/10 rounded-full blur-[120px]"></div>
+        <div class="absolute top-[20%] right-[10%] w-[40%] h-[40%] bg-blue-900/10 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] left-[20%] w-[60%] h-[60%] bg-indigo-900/05 rounded-full blur-[150px]"></div>
+    </div>
+
+    <!-- Main Dashboard Grid Wrapper -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full max-w-7xl relative z-10">
+        
+        <!-- LEFT COLUMN: CONTROLS & CONSOLE -->
+        <div class="lg:col-span-8 flex flex-col justify-between min-h-[calc(100vh-4rem)]">
+            <!-- Top Section: Controls & Stats -->
+            <div class="space-y-8">
+            <!-- Top Controls Row -->
+            <div class="flex flex-wrap items-center gap-6">
+                <!-- Circular Buttons (Glass) -->
+                <div class="flex gap-4 p-2 items-center">
+                    <!-- Button 1 -->
+                    <div class="relative w-[75px] h-[75px] group cursor-pointer shrink-0">
+                        <svg class="absolute -top-[40px] -left-[40px] w-[155px] h-[155px] transition-opacity duration-300 group-hover:opacity-0" 
+                             viewBox="-40 -32 155 155" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g filter="url(#filter0_ddi_16_242)">
+                                <g clip-path="url(#clip0_16_242)">
+                                    <rect y="4" width="75" height="75" rx="37.5" fill="black"/>
+                                    <g opacity="0.4" filter="url(#filter1_f_16_242)">
+                                        <path d="M0 60L85 73.5625L0 88V60Z" fill="url(#paint0_linear_16_242)"/>
+                                    </g>
+                                </g>
+                                <rect x="0.25" y="4.25" width="74.5" height="74.5" rx="37.25" stroke="url(#paint1_linear_16_242)" stroke-width="0.5"/>
+                            </g>
+                            <defs>
+                                <filter id="filter0_ddi_16_242" x="-40" y="-32" width="155" height="155" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                                    <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                                    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                                    <feOffset dy="4"/>
+                                    <feGaussianBlur stdDeviation="6.25"/>
+                                    <feComposite in2="hardAlpha" operator="out"/>
+                                    <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.08 0"/>
+                                    <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_16_242"/>
+                                    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                                    <feOffset dy="4"/>
+                                    <feGaussianBlur stdDeviation="20"/>
+                                    <feComposite in2="hardAlpha" operator="out"/>
+                                    <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.1 0"/>
+                                    <feBlend mode="normal" in2="effect1_dropShadow_16_242" result="effect2_dropShadow_16_242"/>
+                                    <feBlend mode="normal" in="SourceGraphic" in2="effect2_dropShadow_16_242" result="shape"/>
+                                    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                                    <feMorphology radius="4" operator="dilate" in="SourceAlpha" result="effect3_innerShadow_16_242"/>
+                                    <feOffset dx="-1" dy="-2"/>
+                                    <feGaussianBlur stdDeviation="10.8"/>
+                                    <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+                                    <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.29 0"/>
+                                    <feBlend mode="normal" in2="shape" result="effect3_innerShadow_16_242"/>
+                                </filter>
+                                <filter id="filter1_f_16_242" x="-36.5" y="23.5" width="158" height="101" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                                    <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                                    <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+                                    <feGaussianBlur stdDeviation="18.25" result="effect1_foregroundBlur_16_242"/>
+                                </filter>
+                                <linearGradient id="paint0_linear_16_242" x1="1.54545" y1="60.4375" x2="10.5301" y2="104.871" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#D9D9D9"/>
+                                    <stop offset="0.0161739" stop-color="#818181"/>
+                                    <stop offset="0.221192" stop-color="#E5E5E5"/>
+                                    <stop offset="1" stop-color="white"/>
+                                </linearGradient>
+                                <linearGradient id="paint1_linear_16_242" x1="-4.5" y1="4" x2="79.5" y2="89" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="white"/>
+                                    <stop offset="0.326923" stop-color="#969696" stop-opacity="0.587597"/>
+                                    <stop offset="0.471154" stop-color="#4D4D4D" stop-opacity="0.8"/>
+                                    <stop offset="0.615385" stop-color="#919191" stop-opacity="0.569231"/>
+                                    <stop offset="0.846154" stop-color="white"/>
+                                    <stop offset="1" stop-opacity="0"/>
+                                </linearGradient>
+                                <clipPath id="clip0_16_242">
+                                    <rect y="4" width="75" height="75" rx="37.5" fill="white"/>
+                                </clipPath>
+                            </defs>
+                        </svg>
+                        <svg class="absolute -top-[40px] -left-[40px] w-[155px] h-[155px] opacity-0 transition-opacity duration-300 group-hover:opacity-100" 
+                             viewBox="-40 -32 155 155" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g transform="translate(-40, 0)">
+                                <g filter="url(#filter0_ddi_16_246)">
+                                    <g clip-path="url(#clip0_16_246)">
+                                        <rect x="40" y="4" width="75" height="75" rx="37.5" fill="black"/>
+                                        <g opacity="0.4" filter="url(#filter1_f_16_246)">
+                                            <path d="M46 25L131 43.4062L46 63V25Z" fill="url(#paint0_linear_16_246)"/>
+                                        </g>
+                                    </g>
+                                    <rect x="40.25" y="4.25" width="74.5" height="74.5" rx="37.25" stroke="url(#paint1_linear_16_246)" stroke-width="0.5"/>
+                                </g>
+                            </g>
+                            <defs>
+                                <filter id="filter0_ddi_16_246" x="0" y="-32" width="155" height="155" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                                    <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                                    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                                    <feOffset dy="4"/>
+                                    <feGaussianBlur stdDeviation="6.25"/>
+                                    <feComposite in2="hardAlpha" operator="out"/>
+                                    <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.08 0"/>
+                                    <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_16_246"/>
+                                    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                                    <feOffset dy="4"/>
+                                    <feGaussianBlur stdDeviation="20"/>
+                                    <feComposite in2="hardAlpha" operator="out"/>
+                                    <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.1 0"/>
+                                    <feBlend mode="normal" in2="effect1_dropShadow_16_246" result="effect2_dropShadow_16_246"/>
+                                    <feBlend mode="normal" in="SourceGraphic" in2="effect2_dropShadow_16_246" result="shape"/>
+                                    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                                    <feMorphology radius="4" operator="dilate" in="SourceAlpha" result="effect3_innerShadow_16_246"/>
+                                    <feOffset dx="-1" dy="-2"/>
+                                    <feGaussianBlur stdDeviation="10.8"/>
+                                    <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+                                    <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.29 0"/>
+                                    <feBlend mode="normal" in2="shape" result="effect3_innerShadow_16_246"/>
+                                </filter>
+                                <filter id="filter1_f_16_246" x="2" y="-19" width="173" height="126" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                                    <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                                    <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+                                    <feGaussianBlur stdDeviation="22" result="effect1_foregroundBlur_16_246"/>
+                                </filter>
+                                <linearGradient id="paint0_linear_16_246" x1="47.5455" y1="25.5938" x2="63.564" y2="83.9658" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#D9D9D9"/>
+                                    <stop offset="0.0161739" stop-color="#818181"/>
+                                    <stop offset="0.221192" stop-color="#E5E5E5"/>
+                                    <stop offset="1" stop-color="white"/>
+                                </linearGradient>
+                                <linearGradient id="paint1_linear_16_246" x1="24.5" y1="26.5" x2="134" y2="60" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="white"/>
+                                    <stop offset="0.326923" stop-color="#969696" stop-opacity="0.587597"/>
+                                    <stop offset="0.471154" stop-color="#4D4D4D" stop-opacity="0.8"/>
+                                    <stop offset="0.615385" stop-color="#919191" stop-opacity="0.569231"/>
+                                    <stop offset="0.846154" stop-color="white"/>
+                                    <stop offset="1" stop-opacity="0"/>
+                                </linearGradient>
+                                <clipPath id="clip0_16_246">
+                                    <rect x="40" y="4" width="75" height="75" rx="37.5" fill="white"/>
+                                </clipPath>
+                            </defs>
+                        </svg>
+                    </div>
+
+                    <!-- Button 2 (Mirror) -->
+                    <div class="relative w-[75px] h-[75px] group cursor-pointer shrink-0">
+                        <svg class="absolute -top-[40px] -left-[40px] w-[155px] h-[155px] transition-opacity duration-300 group-hover:opacity-0" 
+                             viewBox="-40 -32 155 155" fill="none" xmlns="http://www.w3.org/2000/svg">
+                             <g filter="url(#filter0_ddi_16_242)">
+                                <g clip-path="url(#clip0_16_242)">
+                                    <rect y="4" width="75" height="75" rx="37.5" fill="black"/>
+                                    <g opacity="0.4" filter="url(#filter1_f_16_242)">
+                                        <path d="M0 60L85 73.5625L0 88V60Z" fill="url(#paint0_linear_16_242)"/>
+                                    </g>
+                                </g>
+                                <rect x="0.25" y="4.25" width="74.5" height="74.5" rx="37.25" stroke="url(#paint1_linear_16_242)" stroke-width="0.5"/>
+                            </g>
+                        </svg>
+                        <svg class="absolute -top-[40px] -left-[40px] w-[155px] h-[155px] opacity-0 transition-opacity duration-300 group-hover:opacity-100" 
+                             viewBox="-40 -32 155 155" fill="none" xmlns="http://www.w3.org/2000/svg">
+                             <g transform="translate(-40, 0)">
+                                <g filter="url(#filter0_ddi_16_246)">
+                                    <g clip-path="url(#clip0_16_246)">
+                                        <rect x="40" y="4" width="75" height="75" rx="37.5" fill="black"/>
+                                        <g opacity="0.4" filter="url(#filter1_f_16_246)">
+                                            <path d="M46 25L131 43.4062L46 63V25Z" fill="url(#paint0_linear_16_246)"/>
+                                        </g>
+                                    </g>
+                                    <rect x="40.25" y="4.25" width="74.5" height="74.5" rx="37.25" stroke="url(#paint1_linear_16_246)" stroke-width="0.5"/>
+                                </g>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Vertical Separator with Shiny Gradient -->
+                <div class="h-12 w-px hidden sm:block" 
+                     style="background: linear-gradient(180deg, hsla(0, 0%, 100%, 1) 0%, hsla(0, 0%, 59%, 0.59) 20%, hsla(0, 0%, 30%, 0.8) 45%, hsla(0, 0%, 57%, 0.57) 60%, hsla(0, 0%, 100%, 1) 85%, hsla(0, 0%, 0%, 0) 100%); opacity: 0.8;">
+                </div>
+
+                <button class="glass-panel w-[75px] h-[75px] rounded-[24px] flex items-center justify-center text-white/90 hover:bg-white/5 transition-colors active:scale-95 duration-100 group">
+                    <i data-lucide="pause" class="w-8 h-8 fill-current drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]"></i>
+                </button>
+                <button class="glass-panel w-[75px] h-[75px] rounded-[24px] flex items-center justify-center text-white/90 hover:bg-white/5 transition-colors active:scale-95 duration-100 group">
+                    <i data-lucide="play" class="w-8 h-8 fill-current drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] ml-1"></i>
+                </button>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="flex flex-wrap gap-6">
+                <!-- Time Elapsed Label with updated concentric design -->
+                <!-- UPDATED: 
+                     1. REMOVED min-w-[340px]: This allows the box to shrink-wrap the content, 
+                        ensuring the pr-[11px] is visually accurate (11px from the physical edge).
+                     2. pr-[11px]: Strictly enforces the concentric spacing for the button.
+                     3. pl-6 & gap-6: Maintains the equal spacing on the left and middle.
+                -->
+                <div class="glass-panel h-[97px] rounded-[24px] flex items-center pl-6 pr-[11px] gap-6">
+                    <!-- UPDATED TEXT: 00:01:23 (No spaces) -->
+                    <span class="font-mono text-3xl text-white/80 drop-shadow-md whitespace-nowrap">00:01:23</span>
+                    
+                    <!-- Divider with Shiny Gradient -->
+                    <div class="h-10 w-px shrink-0" 
+                         style="background: linear-gradient(180deg, hsla(0, 0%, 100%, 1) 0%, hsla(0, 0%, 59%, 0.59) 20%, hsla(0, 0%, 30%, 0.8) 45%, hsla(0, 0%, 57%, 0.57) 60%, hsla(0, 0%, 100%, 1) 85%, hsla(0, 0%, 0%, 0) 100%); opacity: 0.8;">
+                    </div>
+                    
+                    <!-- Button (75x75, radius 13px) -->
+                    <button id="timer-control-btn" class="glass-panel w-[75px] h-[75px] rounded-[13px] flex items-center justify-center text-white/90 hover:bg-white/5 transition-colors active:scale-95 duration-100 group shrink-0">
+                        <i data-lucide="pause" class="w-8 h-8 fill-current drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]"></i>
+                    </button>
+                </div>
+
+                <!-- Job ID Label -->
+                <div class="glass-panel h-[97px] rounded-[24px] flex items-center px-8 min-w-[320px]">
+                    <span class="font-mono text-2xl text-white/50 tracking-wider">JOB ID : <span class="text-white/90 font-medium ml-2">0xas123</span></span>
+                </div>
+            </div>
+            </div>
+
+            <!-- Console Section (Bottom Left) -->
+            <div class="glass-panel w-full h-[510px] rounded-[24px] flex flex-col overflow-hidden">
+                <!-- Header with Shiny Bottom Border -->
+                <div class="relative h-14 flex items-center justify-between px-6 shrink-0 bg-white/[0.02]">
+                    <div class="flex items-center gap-3">
+                         <div class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50"></div>
+                         <div class="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50"></div>
+                         <div class="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50"></div>
+                         <span class="font-mono text-white/40 text-sm ml-2">Console</span>
+                    </div>
+                    <button class="text-white/30 hover:text-white transition-colors">
+                        <i data-lucide="minus" class="w-4 h-4"></i>
+                    </button>
+                    
+                    <!-- The Shiny Gradient Line -->
+                    <div class="absolute bottom-0 left-0 w-full h-[1px]" 
+                         style="background: linear-gradient(90deg, hsla(0, 0%, 100%, 1) 0%, hsla(0, 0%, 59%, 0.59) 20%, hsla(0, 0%, 30%, 0.8) 45%, hsla(0, 0%, 57%, 0.57) 60%, hsla(0, 0%, 100%, 1) 85%, hsla(0, 0%, 0%, 0) 100%); opacity: 0.9;">
+                    </div>
+                </div>
+                
+                <div class="flex-1 p-6 font-mono text-sm overflow-y-auto custom-scrollbar leading-loose">
+                    <div class="text-white/80 space-y-1">
+                        <p><span class="text-blue-400">user@interface</span>:<span class="text-purple-400">~/dashboard</span>$ ./init_sequence.sh</p>
+                        <p class="text-white/40 pt-2">> [INFO] Initializing glass core...</p>
+                        <p class="text-white/40">> [INFO] Loading gradient vectors...</p>
+                        <p class="text-white/40">> [INFO] Applying blur filters (24px)...</p>
+                        <p class="text-yellow-300/80 pt-1">> [WARN] High fidelity rendering active.</p>
+                        <p class="text-white/40">> [INFO] Checking connection to node 13:164...</p>
+                        <p class="text-green-400/90 pt-1">> [SUCCESS] Connected. Data stream live.</p>
+                        <br>
+                        <div class="flex items-center gap-2">
+                            <span class="text-blue-400">➜</span>
+                            <span class="animate-pulse w-2 h-4 bg-white/60 block"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="lg:col-span-4 flex flex-col gap-6 pt-4">
+            
+            <div class="glass-panel w-full p-6 rounded-[20px] min-h-[140px] flex flex-col justify-between group cursor-pointer hover:bg-white/[0.02] transition-colors relative overflow-hidden">
+                <div class="space-y-3 z-10">
+                    <p class="font-semibold text-xs uppercase tracking-widest text-white/40">Query</p>
+                    <p class="text-white/90 text-lg leading-snug">"How do I simulate glass gradients?"</p>
+                </div>
+                <div class="flex items-end justify-between z-10 pt-4">
+                    <p class="text-white/50 text-sm">Processing...</p>
+                    <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center opacity-60 group-hover:opacity-100 transition-all group-hover:scale-110">
+                        <i data-lucide="maximize-2" class="w-4 h-4 text-white"></i>
+                    </div>
+                </div>
+                <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-blue-500/10 rounded-full blur-[40px] group-hover:bg-blue-500/20 transition-all duration-500"></div>
+            </div>
+
+            <!-- UPDATED: Scrolling Text Button -->
+            <button class="glass-panel w-full h-[60px] rounded-[30px] flex items-center pr-2 relative overflow-hidden group hover:bg-white/[0.02] transition-colors">
+                <!-- Removed pl-[30px] here, logic moved to CSS 'left: 30px' -->
+                <div class="flex-1 overflow-hidden h-full relative" id="scrolling-text-container">
+                    <!-- Dynamic Text will be injected here by JS -->
+                </div>
+                <!-- Custom SVG Button Container -->
+                <div class="shrink-0 relative w-[46px] h-[46px] flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="46" height="46" viewBox="0 0 36 36" fill="none" class="absolute inset-0 w-full h-full">
+                        <circle cx="18" cy="18" r="17.75" fill="#262626" stroke="url(#paint0_linear_18_10)" stroke-width="0.5"/>
+                        <defs>
+                            <linearGradient id="paint0_linear_18_10" x1="32.5" y1="-4.5" x2="4" y2="42.5" gradientUnits="userSpaceOnUse">
+                            <stop offset="0.149038" stop-color="#D9D9D9"/>
+                            <stop offset="0.576923"/>
+                            <stop offset="0.855769" stop-color="white"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <i data-lucide="arrow-up" class="relative w-5 h-5 text-white/80 z-10"></i>
+                </div>
+            </button>
+
+            <div class="glass-panel w-full h-40 rounded-[24px] flex flex-col items-center justify-center gap-3">
+                 <div class="relative w-12 h-12">
+                     <div class="absolute inset-0 rounded-full border-2 border-white/10"></div>
+                     <div class="absolute inset-0 rounded-full border-2 border-t-white/80 animate-spin"></div>
+                 </div>
+                 <span class="text-xs font-mono text-white/30 uppercase tracking-widest">Awaiting Input</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        /* DYNAMIC LIGHTING ENGINE */
+        document.addEventListener('mousemove', (e) => {
+            const panels = document.querySelectorAll('.glass-panel');
+            panels.forEach(panel => {
+                const rect = panel.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                panel.style.setProperty('--mouse-x', `${x}px`);
+                panel.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+
+        /* ADVANCED SCROLLING TEXT EFFECT */
+        class ScrollingTextController {
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                this.messages = [
+                    "system status: optimal",
+                    "rendering updates...",
+                    "checking inputs...",
+                    "compiling assets...",
+                    "verifying integrity..."
+                ];
+                this.messageIndex = 0;
+                
+                // GEOMETRY CONFIGURATION
+                // Box Height: 60px
+                // Text Line Height: 20px (1/3rd of box)
+                // Center Position: (60 - 20) / 2 = 20px from bottom
+                this.lineHeight = 20; 
+                this.initialBottom = 20; 
+                
+                this.startSequence();
+            }
+
+            startSequence() {
+                // Spawn first line immediately
+                this.spawnLine();
+                // Spawn subsequent lines every 2.5 seconds
+                setInterval(() => this.spawnLine(), 2500);
+            }
+
+            spawnLine() {
+                // 1. Move existing lines UP
+                const existingLines = Array.from(this.container.children);
+                existingLines.forEach((line) => {
+                    const currentBottom = parseFloat(line.style.bottom);
+                    const newBottom = currentBottom + this.lineHeight;
+                    
+                    line.style.bottom = `${newBottom}px`;
+
+                    // CALCULATE PROGRESSIVE DISINTEGRATION
+                    // Start disintegration immediately after leaving the center position (20px)
+                    if (newBottom > this.initialBottom) {
+                        const distance = newBottom - this.initialBottom;
+                        
+                        // Progressive blur: increases as it moves up
+                        const blurAmount = Math.min(distance * 0.15, 6); 
+                        
+                        // Progressive fade: fade out quickly as it reaches the top
+                        // Box is 60px high. Top is 40px away from center.
+                        const opacity = Math.max(1 - (distance / 35), 0); 
+                        
+                        line.style.filter = `blur(${blurAmount}px)`;
+                        line.style.opacity = opacity;
+                    }
+
+                    // Remove if completely out of view
+                    if (newBottom > 60) {
+                        line.remove();
+                    }
+                });
+
+                // 2. Create NEW line at CENTER
+                const text = this.messages[this.messageIndex];
+                this.messageIndex = (this.messageIndex + 1) % this.messages.length;
+
+                const newLine = document.createElement('div');
+                // text-sm is 14px font / 20px line-height (Tailwind default)
+                newLine.className = 'scroll-line font-semibold text-sm leading-5 text-white/80';
+                newLine.style.bottom = `${this.initialBottom}px`;
+                newLine.style.filter = 'blur(0px)';
+                newLine.style.opacity = '1';
+                
+                this.container.appendChild(newLine);
+
+                // 3. Typewriter Effect
+                this.typeText(newLine, text);
+            }
+
+            typeText(element, text) {
+                let i = 0;
+                element.textContent = ""; // Start empty
+                
+                // Fast typing speed
+                const typeInterval = setInterval(() => {
+                    if (i < text.length) {
+                        element.textContent += text.charAt(i);
+                        i++;
+                    } else {
+                        clearInterval(typeInterval);
+                    }
+                }, 30); 
+            }
+        }
+
+        // Initialize the controller
+        new ScrollingTextController('scrolling-text-container');
+
+        /* TIMER BUTTON TOGGLE LOGIC */
+        const timerBtn = document.getElementById('timer-control-btn');
+        let isTimerRunning = true; // Initial state matches the 'pause' icon (implying it is running)
+
+        if (timerBtn) {
+            timerBtn.addEventListener('click', () => {
+                isTimerRunning = !isTimerRunning;
+                
+                // Determine which icon to show
+                // If running, show 'pause' (to allow pausing)
+                // If paused, show 'play' (to allow resuming)
+                const iconName = isTimerRunning ? 'pause' : 'play';
+                
+                // Update button content
+                // Note: keeping the exact styling classes: w-8 h-8 fill-current drop-shadow...
+                timerBtn.innerHTML = `<i data-lucide="${iconName}" class="w-8 h-8 fill-current drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]"></i>`;
+                
+                // Refresh icons to render the new SVG
+                lucide.createIcons();
+            });
+        }
+
+    </script>
+</body>
+</html>

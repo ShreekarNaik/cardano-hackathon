@@ -1,0 +1,226 @@
+version: '3.8'
+
+services:
+  # Cardano Node (Testnet)
+  cardano-node:
+    image: inputoutput/cardano-node:latest
+    container_name: decentralai-cardano-node
+    environment:
+      NETWORK: testnet
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    volumes:
+      - cardano-data:/data
+      - cardano-ipc:/ipc
+    networks:
+      - decentralai-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "cardano-cli", "query", "tip", "--testnet-magic", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # PostgreSQL with TimescaleDB extension
+  postgres:
+    image: timescale/timescaledb:latest-pg15
+    container_name: decentralai-postgres
+    environment:
+      POSTGRES_DB: analytics
+      POSTGRES_USER: analyst
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_MULTIPLE_DATABASES: analytics,masumi,hydra
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - decentralai-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U analyst -d analytics"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Ogmios - Cardano node interface
+  ogmios:
+    image: cardanosolutions/ogmios:latest
+    container_name: decentralai-ogmios
+    depends_on:
+      cardano-node:
+        condition: service_healthy
+    ports:
+      - "1337:1337"
+    volumes:
+      - cardano-ipc:/ipc
+    command:
+      - --node-socket
+      - /ipc/node.socket
+      - --node-config
+      - /config/cardano-node/config.json
+      - --host
+      - 0.0.0.0
+      - --port
+      - "1337"
+    networks:
+      - decentralai-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:1337/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Hydra Node
+  hydra-node:
+    image: ghcr.io/cardano-scaling/hydra-node:latest
+    container_name: decentralai-hydra-node
+    depends_on:
+      cardano-node:
+        condition: service_healthy
+    ports:
+      - "4001:4001"
+      - "5001:5001"
+    volumes:
+      - cardano-ipc:/ipc
+      - hydra-data:/data
+    environment:
+      CARDANO_NODE_SOCKET_PATH: /ipc/node.socket
+      HYDRA_SCRIPTS_TX_ID: ${HYDRA_SCRIPTS_TX_ID:-}
+      HYDRA_API_HOST: 0.0.0.0
+      HYDRA_API_PORT: 4001
+    networks:
+      - decentralai-network
+    restart: unless-stopped
+
+  # Masumi Registry Service
+  masumi-registry:
+    image: masumi/registry-service:latest
+    container_name: decentralai-masumi-registry
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: postgresql://analyst:${DB_PASSWORD:-changeme}@postgres:5432/masumi
+      CARDANO_NETWORK: testnet
+      PORT: 8001
+    networks:
+      - decentralai-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Masumi Payment Service
+  masumi-payment:
+    image: masumi/payment-service:latest
+    container_name: decentralai-masumi-payment
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ogmios:
+        condition: service_healthy
+    ports:
+      - "8002:8002"
+    environment:
+      DATABASE_URL: postgresql://analyst:${DB_PASSWORD:-changeme}@postgres:5432/masumi
+      OGMIOS_URL: ws://ogmios:1337
+      CARDANO_NETWORK: testnet
+      PORT: 8002
+    networks:
+      - decentralai-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: decentralai-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - decentralai-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Grafana for monitoring
+  grafana:
+    image: grafana/grafana:latest
+    container_name: decentralai-grafana
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_DATABASE_TYPE: postgres
+      GF_DATABASE_HOST: postgres:5432
+      GF_DATABASE_NAME: analytics
+      GF_DATABASE_USER: analyst
+      GF_DATABASE_PASSWORD: ${DB_PASSWORD:-changeme}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./infrastructure/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./infrastructure/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - decentralai-network
+    restart: unless-stopped
+
+  # Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: decentralai-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - decentralai-network
+    restart: unless-stopped
+
+volumes:
+  cardano-data:
+    driver: local
+  cardano-ipc:
+    driver: local
+  postgres-data:
+    driver: local
+  hydra-data:
+    driver: local
+  redis-data:
+    driver: local
+  grafana-data:
+    driver: local
+  prometheus-data:
+    driver: local
+
+networks:
+  decentralai-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

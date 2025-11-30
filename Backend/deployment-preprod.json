@@ -1,0 +1,10 @@
+{
+  "network": "preprod",
+  "timestamp": "2025-11-30T05:45:51.601Z",
+  "contracts": {
+    "AgentPayment": {
+      "address": "addr_test1wpnlxv2xv9x9x9x9x9x9x9x9x9x9x9x9x9x9x9x9x9x9x9x9x9x9",
+      "policyId": "policy_test11764481549600"
+    }
+  }
+}
